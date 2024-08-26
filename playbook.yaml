@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 - name: Instalar Nginx
+=======
+- name: Install Nginx
+>>>>>>> Stashed changes
   apt:
     name: nginx
     state: present
