@@ -1,40 +1,48 @@
-- name: Install Nginx
-  apt:
-    name: nginx
-    state: present
+---
+- hosts: webservers
+  vars:
+    web_server_root: /var/www/html
+    website_source_dir: website
+    backend_servers:  
+      - web1
+      - web2 
+
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Copy Nginx configuration file (using template)
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Check Nginx configuration syntax
+      command: nginx -t
+      register: nginx_config_check
+      changed_when: false
+
+    - name: Restart Nginx (only if configuration changed)
+      service:
+        name: nginx
+        state: restarted
+      when: nginx_config_check.changed
+
+    - name: Copy website files
+      copy:
+        src: "{{ website_source_dir }}/"
+        dest: "{{ web_server_root }}/"
+        owner: www-data
+        group: www-data
+        mode: 0755
+
+- hosts: dbservers
+
   become: yes
-
-- name: Copy configuration file 
-  copy:
-    src: nginx.conf
-    dest: /etc/nginx/nginx.conf
-    owner: root
-    group: root
-    mode: 0644
-  become: yes
-
-- name: Restart Nginx
-  service:
-    name: nginx
-    state: restarted
-  become: yes
-
-- name: Copy website files
-  copy:
-    src: website-test/
-    dest: /var/www/html/
-    owner: www-data
-    group: www-data
-    mode: 0755
-  become: yes
-  delegate_to: "{{ item }}"
-  with_items:
-    - web1
-    - vm2
-
-- hosts: db  
-
-  become: yes  
 
   tasks:
     - name: Install MySQL Server
@@ -45,7 +53,7 @@
     - name: Copy MySQL configuration file (if needed)
       copy:
         src: config.cnf
-        dest: /etc/mysql/config.cnf
+        dest: /etc/mysql/my.cnf   
         owner: root
         group: root
         mode: 0644
@@ -58,9 +66,9 @@
     - name: Set MySQL root password (securely)
       mysql_user:
         name: root
-        password: "{{ passwd_db }}"  
+        password: "{{ mysql_root_password }}" 
         host: localhost
         priv: "*.*:ALL" 
         state: present
 
-   
+    # Add more tasks for database creation, user creation, etc. as needed
