@@ -1,14 +1,10 @@
-<<<<<<< Updated upstream
-- name: Instalar Nginx
-=======
 - name: Install Nginx
->>>>>>> Stashed changes
   apt:
     name: nginx
     state: present
   become: yes
 
-- name: Copiar arquivo de configuração
+- name: Copy configuration file 
   copy:
     src: nginx.conf
     dest: /etc/nginx/nginx.conf
@@ -17,15 +13,15 @@
     mode: 0644
   become: yes
 
-- name: Reiniciar Nginx
+- name: Restart Nginx
   service:
     name: nginx
     state: restarted
   become: yes
 
-- name: Copiar arquivos do website
+- name: Copy website files
   copy:
-    src: website/
+    src: website-test/
     dest: /var/www/html/
     owner: www-data
     group: www-data
@@ -62,9 +58,9 @@
     - name: Set MySQL root password (securely)
       mysql_user:
         name: root
-        password: "{{ mysql_root_password }}"  # Provide the password via Ansible vault or environment variable
+        password: "{{ passwd_db }}"  
         host: localhost
-        priv: "*.*:ALL"  # Grant all privileges (adjust as needed)
+        priv: "*.*:ALL" 
         state: present
 
-    # Add more tasks for database creation, user creation, etc. as needed
+   
